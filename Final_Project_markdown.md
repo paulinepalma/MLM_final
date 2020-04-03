@@ -1,23 +1,15 @@
----
-title: "Final_Project_markdown"
-author: "Pauline Palma"
-date: "03/04/2020"
-output: 
-  html_document: 
-    keep_md: yes
----
+Final\_Project\_markdown
+================
+Pauline Palma
+03/04/2020
 
-Hello World!
+Hello World\!
 
-
-```r
+``` r
 x = 5
 y = 2
 z = x+y
 z
 ```
 
-```
-## [1] 7
-```
-
+    ## [1] 7

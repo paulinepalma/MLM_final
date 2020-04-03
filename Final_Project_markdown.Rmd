@@ -2,9 +2,7 @@
 title: "Final_Project_markdown"
 author: "Pauline Palma"
 date: "03/04/2020"
-output: 
-  html_document: 
-    keep_md: yes
+output: github_document
 ---
 
 Hello World!
