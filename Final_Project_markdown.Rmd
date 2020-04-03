@@ -3,7 +3,6 @@ title: "Final_Project_markdown"
 author: "Pauline Palma"
 date: "03/04/2020"
 output: github_document
-  keep md: TRUE
 ---
 
 ```{r setup, include=FALSE}
