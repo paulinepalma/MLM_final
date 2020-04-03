@@ -5,13 +5,348 @@ date: "03/04/2020"
 output: github_document
 ---
 
-Hello World!
+
+```{r, echo = FALSE}
+library(dplyr)
+library(lme4)
+library(lmerTest)
+library(tidyverse)
+options(scipen = 999)
+```
+Data loading and preprocessing
+
+```{r, echo = FALSE}
+PSYC746_final = trt
+colnames(PSYC746_final)[colnames(PSYC746_final)=="seq"] <- "Trial_order"
+colnames(PSYC746_final)[colnames(PSYC746_final)=="subj"] <- "Subject"
+colnames(PSYC746_final)[colnames(PSYC746_final)=="item"] <- "ITEM"
+colnames(PSYC746_final)[colnames(PSYC746_final)=="cond"] <- "Condition_nb"
+colnames(PSYC746_final)[colnames(PSYC746_final)=="R1"] <- "TRT_beginning"
+colnames(PSYC746_final)[colnames(PSYC746_final)=="R2"] <- "TRT_modifier"
+colnames(PSYC746_final)[colnames(PSYC746_final)=="R3"] <- "TRT_target"
+colnames(PSYC746_final)[colnames(PSYC746_final)=="R4"] <- "TRT_end"
+PSYC746_final$Group = ifelse(PSYC746_final$Subject <14, "English_L1", "French_L1")
+PSYC746_final$Condition = ifelse(PSYC746_final$Condition_nb == 1, "Modifier-dominant", 
+                                 (ifelse(PSYC746_final$Condition_nb == 2, "Modifier-subordinate", 
+                                         (ifelse(PSYC746_final$Condition_nb == 3, "Bare-dominant", 
+                                                 (ifelse(PSYC746_final$Condition_nb == 4, "Bare-subordinate", "DELETE")))))))
+PSYC746_final = subset(PSYC746_final, Condition != "DELETE")
+PSYC746_final$Context = ifelse(PSYC746_final$Condition_nb == 1, "Modifier", 
+                               (ifelse(PSYC746_final$Condition_nb == 2, "Modifier", "Bare")))
+PSYC746_final$WordType = ifelse(PSYC746_final$ITEM <33, "Cognate Homonym", "English Homonym")
+PSYC746_final$Dominance = ifelse(PSYC746_final$Condition_nb == 1, "Dominant", 
+                                 (ifelse(PSYC746_final$Condition_nb == 2, "Subordinate", 
+                                         (ifelse(PSYC746_final$Condition_nb == 3, "Dominant", "Subordinate")))))
+
+```
+
+Remove trials where target was skipped (TRT = NA)
+```{r, echo = TRUE}
+summary(PSYC746_final$TRT_target)
+```
+There are 25 skipped trials, which represents 1.24% of the data
+
+```{r, echo = FALSE}
+PSYC746_final = PSYC746_final %>% filter(!is.na(TRT_target))
+```
+
+Histogram of the dependent variable (TRT)
+```{r, echo = FALSE}
+hist(PSYC746_final$TRT_target)
+```
+Heavily skewed: we need to transform it
 
 ```{r, echo = TRUE}
-x = 5
-y = 2
-a = 2
-z = x+y+a
-z
+PSYC746_final$log_TRT_target = log(PSYC746_final$TRT_target)
+hist(PSYC746_final$log_TRT_target)
 ```
+
+Recode variable (effects coding)
+```{r, echo = FALSE}
+PSYC746_final$Group_dev =ifelse(PSYC746_final$Group == "English_L1", -0.5, 0.5)
+PSYC746_final$WordType_dev =ifelse(PSYC746_final$WordType == "English Homonym", -0.5, 0.5)
+PSYC746_final$Dominance_dev =ifelse(PSYC746_final$Dominance == "Dominant", -0.5, 0.5)
+PSYC746_final$Context_dev =ifelse(PSYC746_final$Context == "Bare", -0.5, 0.5)
+```
+
+I. Model 1 (null)
+
+```{r}
+Null = lmer(log_TRT_target ~ 1+(1|Subject) + (1|ITEM), data=PSYC746_final, REML = T)
+summary(Null)
+```
+
+ICC calculation
+
+According to Carson & Beeson (2013, see also  Locker et al., 2007), 
+one should calculate the ICC in that cross-classified data structure 
+by dividing the random effect (by participant or by items) by the total variance (by participant + by item + residuals)
+```{r ICC item}
+(0.02596)/(0.02596+0.20575+0.27660)
+```
+ICC by item = 5.11% total variance
+
+
+```{r ICC participant}
+(0.20575)/(0.20575+0.02596+0.27660)
+```
+ICC by participant = 40.48% total variance
+
+DEFF
+by participants
+
+Calculate the mean number of observation per participant
+```{r}
+x = as.data.frame(table(PSYC746_final$Subject))
+mean(x$Freq)
+```
+Mean number of observations per participant = 62.125
+
+```{r}
+DEFF = 1+(62.125-1)*0.4047727
+```
+DEFF participants = 25.742
+
+Effective sample size
+```{r}
+32/25.742
+```
+Effective sample size = 1.243
+
+```{r}
+DEFT = sqrt(DEFF)
+```
+DEFT participants = 5.074
+SE are 5.105 times larger than estimated
+
+
+
+DEFF by items
+Calculate the mean number of observations per item
+```{r}
+x = as.data.frame(table(PSYC746_final$ITEM))
+mean(x$Freq)
+```
+Mean number of observations per item = 31.063
+
+```{r}
+DEFF2 = 1+0.0510712*(31.063-1)
+```
+DEFF items = 2.535
+
+```{r}
+64/2.535
+```
+Effective sample size = 25.247
+
+```{r}
+DEFT2 = sqrt(DEFF2)
+```
+DEFT items = 1.592
+SE are 1.592 times larger than estimated
+
+II. Model 2
+
+```{r}
+Model2 = lmer(log_TRT_target ~ Context_dev +
+                (1|Subject) + 
+                (1|ITEM), data=PSYC746_final, REML = T)
+summary(Model2)
+```
+
+Deviance
+```{r}
+3298.2-3237.2
+```
+Model 2 is significantly better than the null model (X2(1) = 61, p <.0001)
+
+```{r}
+anova(Null, Model2)
+```
+This confirms that Model 2 has better fit than the null model
+
+Difference in residuals
+```{r}
+tau2change_p = 0.20575-0.20535
+```
+.0004
+
+```{r}
+tau2change_i = 0.02596-0.02621
+```
+-.0002
+
+```{r}
+sigma2change = 0.27660-0.26718
+```
+.0094
+
+Adding this predictor does not really impact the residuals
+
+```{r}
+L1_var_reduction <- sigma2change / 0.27660
+```
+.034
+
+```{r}
+L2_var_reduction_p <- tau2change_p/0.20575
+```
+.002
+
+```{r}
+L2_var_reduction_i <- tau2change_i/0.02596
+```
+-.010
+
+Random variance not really reduced 
+
+Conditional ICC
+```{r}
+conditionalICC_p = 0.20535/ (0.20535 + 0.02621+0.27660)
+conditionalICC_i = 0.02621 / (0.02621 + 0.20535+ 0.27660)
+```
+40.41% of the variance is due to variability between subjects
+5.16% of the variance is due to variability between items
+
+95% plausible values range for intercepts--How much do means vary across participants?
+
+```{r}
+SDx2 <- (2*(sqrt(0.20535)))
+Upper_range <- 6.22001 + SDx2
+lower_range <- 6.22001 - SDx2
+```
+5.314-7.126
+
+95% plausible values range for intercepts--How much do means vary across items?
+
+```{r}
+SDx2 <- (2*(sqrt(0.02621)))
+Upper_range <- 6.22001 + SDx2
+lower_range <- 6.22001 - SDx2
+```
+5.896-6.544
+
+Distribution of L1 residuals
+```{r}
+#L1 residuals
+l1_residuals <- tibble::enframe(residuals(Model2))
+PSYC746_final <- PSYC746_final %>% 
+  bind_cols(l1_residuals) %>% 
+  select(-name) %>% 
+  rename(l1resid = value)
+```
+
+```{r, echo = FALSE, warning = FALSE}
+PSYC746_final %>% ggplot(mapping = aes(x = l1resid)) +
+  geom_histogram()
+```
+
+Distribution of L2 residuals
+```{r}
+par(mfrow=c(1,2))
+
+PSYC746_finalByParticRanef <- ranef(Model2)$Subject[['(Intercept)']]
+qqnorm(PSYC746_finalByParticRanef,  main = "participant means") #2 weirdos
+qqline(PSYC746_finalByParticRanef)
+
+PSYC746_finalByItemRanef <- ranef(Model2)$ITEM[['(Intercept)']]
+qqnorm(PSYC746_finalByItemRanef,  main = "item means") #1 weirdo
+qqline(PSYC746_finalByItemRanef)
+```
+
+2 weird participants, 1 weird item
+
+Summary statistics L2 residuals
+```{r}
+summary(PSYC746_finalByParticRanef)
+summary(PSYC746_finalByItemRanef)
+```
+mean of 0, which is great, but median is different, so there is a hint of nonnormality
+
+Plot L2 residuals-participants
+
+```{r, echo = FALSE, warning = FALSE}
+l2_residuals_p <- ranef(Model2)$Subject
+l2_residuals_p %>% 
+  ggplot(mapping = aes(x = `(Intercept)`)) +
+  geom_histogram()
+```
+
+Plot L2 residuals - Items
+```{r, echo = FALSE, warning  = FALSE}
+l2_residuals_i <- ranef(Model2)$ITEM
+l2_residuals_i %>% 
+  ggplot(mapping = aes(x = `(Intercept)`)) +
+  geom_histogram()
+```
+
+Flag outliers-participants
+
+```{r, echo = FALSE}
+is_outlier <- function(x) {
+  return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+}
+
+temp_int <- l2_residuals_p %>% 
+  tibble::rownames_to_column(var="outlier") %>% 
+  mutate(is_outlier = ifelse(is_outlier(`(Intercept)`), `(Intercept)`, as.numeric(NA)))
+temp_int$outlier[which(is.na(temp_int$is_outlier))] <- as.numeric(NA)
+
+ggplot(temp_int, aes(y = `(Intercept)`, x = 0)) +
+  geom_boxplot()  +
+  geom_text(aes(label = outlier), na.rm = TRUE, nudge_y = 0.2)
+```
+Participant 29 and 8 are outliers
+
+Flag outliers-items
+```{r, echo = FALSE, warning = FALSE}
+temp_int <- l2_residuals_i %>% 
+  tibble::rownames_to_column(var="outlier") %>% 
+  mutate(is_outlier = ifelse(is_outlier(`(Intercept)`), `(Intercept)`, as.numeric(NA)))
+temp_int$outlier[which(is.na(temp_int$is_outlier))] <- as.numeric(NA)
+
+ggplot(temp_int, aes(y = `(Intercept)`, x = 0)) +
+  geom_boxplot()  +
+  geom_text(aes(label = outlier), na.rm = TRUE, nudge_y = 0.2)
+```
+Item 2 is an outlier
+
+Relatedness of l2_predictors and l2_residuals (participants)
+```{r, echo = FALSE, warning = FALSE}
+l2_residuals_rowname <- rownames_to_column(l2_residuals_p) %>% 
+  rename("Subject" = rowname) %>%
+  mutate("Subject" = as.integer(Subject)) %>% 
+  rename(intercept_residual = `(Intercept)`) %>%
+  as_tibble()
+
+PSYC746_final <- full_join(PSYC746_final, l2_residuals_rowname) 
+
+PSYC746_final %>%
+  ggplot() + 
+  geom_point(mapping = aes(x = l1resid, y = intercept_residual))
+```
+
+Relatedness of l2_predictors and l2_residuals (items)
+```{r, echo = FALSE, warning = FALSE}
+l2_residuals_rowname2 <- rownames_to_column(l2_residuals_i) %>% 
+  rename("Item" = rowname) %>%
+  mutate("Item" = as.integer(Item)) %>% 
+  rename(intercept_residual2 = `(Intercept)`) %>%
+  as_tibble()
+
+PSYC746_final <- full_join(PSYC746_final, l2_residuals_rowname2) 
+
+PSYC746_final %>%
+  ggplot() + 
+  geom_point(mapping = aes(x = l1resid, y = intercept_residual2))
+```
+
+III. Model 3
+```{r}
+Model3 = lmer(log_TRT_target ~ Context_dev*Group_dev+
+                (1+Context_dev||Subject) + 
+                (1|ITEM), data=PSYC746_final, REML = T)
+summary(Model3)
+```
+
 
