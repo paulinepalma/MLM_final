@@ -8,8 +8,9 @@ Hello World\!
 ``` r
 x = 5
 y = 2
-z = x+y
+a = 2
+z = x+y+a
 z
 ```
 
-    ## [1] 7
+    ## [1] 9
