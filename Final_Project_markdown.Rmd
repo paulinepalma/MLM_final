@@ -2,7 +2,7 @@
 title: "Final_Project_markdown"
 author: "Pauline Palma"
 date: "03/04/2020"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
