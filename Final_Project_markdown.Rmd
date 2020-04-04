@@ -6,7 +6,7 @@ output: github_document
 ---
 
 
-```{r, echo = FALSE}
+```{r echo = FALSE}
 library(dplyr)
 library(lme4)
 library(lmerTest)
@@ -14,9 +14,12 @@ library(tidyverse)
 options(scipen = 999)
 ```
 Data loading and preprocessing
+```{r}
+PSYC746_final <- read.csv("trt.csv")
+```
+
 
 ```{r, echo = FALSE}
-PSYC746_final = trt
 colnames(PSYC746_final)[colnames(PSYC746_final)=="seq"] <- "Trial_order"
 colnames(PSYC746_final)[colnames(PSYC746_final)=="subj"] <- "Subject"
 colnames(PSYC746_final)[colnames(PSYC746_final)=="item"] <- "ITEM"
@@ -46,12 +49,13 @@ summary(PSYC746_final$TRT_target)
 ```
 There are 25 skipped trials, which represents 1.24% of the data
 
-```{r, echo = FALSE}
+```{r}
 PSYC746_final = PSYC746_final %>% filter(!is.na(TRT_target))
 ```
 
 Histogram of the dependent variable (TRT)
 ```{r, echo = FALSE}
+PSYC746_final$TRT_target = as.numeric(PSYC746_final$TRT_target)
 hist(PSYC746_final$TRT_target)
 ```
 Heavily skewed: we need to transform it
@@ -329,8 +333,8 @@ PSYC746_final %>%
 Relatedness of l2_predictors and l2_residuals (items)
 ```{r, echo = FALSE, warning = FALSE}
 l2_residuals_rowname2 <- rownames_to_column(l2_residuals_i) %>% 
-  rename("Item" = rowname) %>%
-  mutate("Item" = as.integer(Item)) %>% 
+  rename("ITEM" = rowname) %>%
+  mutate("ITEM" = as.integer(ITEM)) %>% 
   rename(intercept_residual2 = `(Intercept)`) %>%
   as_tibble()
 
