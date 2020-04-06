@@ -165,6 +165,11 @@ Deviance
 Model 2 is significantly better than the null model (X2(1) = 61, p <.0001)
 
 ```{r}
+logLik(Model2) 
+confint(Model2, oldNames = FALSE) 
+```
+
+```{r}
 anova(Null, Model2)
 ```
 This confirms that Model 2 has better fit than the null model
@@ -349,8 +354,13 @@ III. Model 3
 ```{r}
 Model3 = lmer(log_TRT_target ~ Context_dev*Group_dev+
                 (1+Context_dev||Subject) + 
-                (1|ITEM), data=PSYC746_final, REML = T)
+                (1+Group_dev||ITEM), data=PSYC746_final, REML = T)
 summary(Model3)
+```
+
+```{r}
+logLik(Model3) 
+confint(Model3, oldNames = FALSE) 
 ```
 
 

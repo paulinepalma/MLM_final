@@ -248,6 +248,25 @@ Model 2 is significantly better than the null model (X2(1) = 61, p
 \<.0001)
 
 ``` r
+logLik(Model2) 
+```
+
+    ## 'log Lik.' -1618.578 (df=5)
+
+``` r
+confint(Model2, oldNames = FALSE) 
+```
+
+    ## Computing profile confidence intervals ...
+
+    ##                             2.5 %     97.5 %
+    ## sd_(Intercept)|ITEM     0.1278619  0.2044899
+    ## sd_(Intercept)|Subject  0.3536448  0.5853164
+    ## sigma                   0.5007293  0.5336756
+    ## (Intercept)             6.0543421  6.3856671
+    ## Context_dev            -0.2375801 -0.1462574
+
+``` r
 anova(Null, Model2)
 ```
 
@@ -355,7 +374,7 @@ PSYC746_final <- PSYC746_final %>%
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 Distribution of L2 residuals
 
@@ -371,7 +390,7 @@ qqnorm(PSYC746_finalByItemRanef,  main = "item means") #1 weirdo
 qqline(PSYC746_finalByItemRanef)
 ```
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
 2 weird participants, 1 weird item
 
@@ -399,23 +418,23 @@ Plot L2
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
 Plot L2 residuals -
     Items
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
 
 Flag
 outliers-participants
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
 Participant 29 and 8 are outliers
 
 Flag outliers-items
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
 Item 2 is an outlier
 
 Relatedness of l2\_predictors and l2\_residuals
@@ -423,14 +442,14 @@ Relatedness of l2\_predictors and l2\_residuals
 
     ## Joining, by = "Subject"
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
 
 Relatedness of l2\_predictors and l2\_residuals
 (items)
 
     ## Joining, by = "ITEM"
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
 
 3.  Model 3
 
@@ -439,36 +458,43 @@ Relatedness of l2\_predictors and l2\_residuals
 ``` r
 Model3 = lmer(log_TRT_target ~ Context_dev*Group_dev+
                 (1+Context_dev||Subject) + 
-                (1|ITEM), data=PSYC746_final, REML = T)
+                (1+Group_dev||ITEM), data=PSYC746_final, REML = T)
+```
+
+    ## Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, :
+    ## Model failed to converge with max|grad| = 0.0357246 (tol = 0.002, component 1)
+
+``` r
 summary(Model3)
 ```
 
     ## Linear mixed model fit by REML. t-tests use Satterthwaite's method [
     ## lmerModLmerTest]
     ## Formula: log_TRT_target ~ Context_dev * Group_dev + (1 + Context_dev ||  
-    ##     Subject) + (1 | ITEM)
+    ##     Subject) + (1 + Group_dev || ITEM)
     ##    Data: PSYC746_final
     ## 
     ## REML criterion at convergence: 3235.6
     ## 
     ## Scaled residuals: 
     ##     Min      1Q  Median      3Q     Max 
-    ## -3.6515 -0.6410 -0.0236  0.6468  3.3326 
+    ## -3.6528 -0.6421 -0.0234  0.6468  3.3333 
     ## 
     ## Random effects:
-    ##  Groups    Name        Variance Std.Dev.
-    ##  ITEM      (Intercept) 0.026274 0.1621  
-    ##  Subject   Context_dev 0.001971 0.0444  
-    ##  Subject.1 (Intercept) 0.190874 0.4369  
-    ##  Residual              0.266246 0.5160  
+    ##  Groups    Name        Variance     Std.Dev. 
+    ##  ITEM      Group_dev   0.0000001496 0.0003867
+    ##  ITEM.1    (Intercept) 0.0262777256 0.1621041
+    ##  Subject   Context_dev 0.0020950215 0.0457714
+    ##  Subject.1 (Intercept) 0.1921543470 0.4383541
+    ##  Residual              0.2661907789 0.5159368
     ## Number of obs: 1988, groups:  ITEM, 64; Subject, 32
     ## 
     ## Fixed effects:
     ##                       Estimate Std. Error       df t value             Pr(>|t|)
-    ## (Intercept)            6.19294    0.08204 33.91029  75.483 < 0.0000000000000002
-    ## Context_dev           -0.20025    0.02493 29.17057  -8.033        0.00000000707
-    ## Group_dev              0.28966    0.15901 30.00768   1.822               0.0785
-    ## Context_dev:Group_dev  0.09712    0.04972 28.96251   1.953               0.0605
+    ## (Intercept)            6.19294    0.08230 33.55826  75.251 < 0.0000000000000002
+    ## Context_dev           -0.20024    0.02501 29.64552  -8.007         0.0000000067
+    ## Group_dev              0.28966    0.15953 29.71686   1.816               0.0795
+    ## Context_dev:Group_dev  0.09713    0.04987 29.43478   1.947               0.0611
     ##                          
     ## (Intercept)           ***
     ## Context_dev           ***
@@ -482,3 +508,28 @@ summary(Model3)
     ## Context_dev  0.001              
     ## Group_dev   -0.181  0.000       
     ## Cntxt_dv:G_  0.000 -0.175  0.001
+    ## convergence code: 0
+    ## Model failed to converge with max|grad| = 0.0357246 (tol = 0.002, component 1)
+
+``` r
+logLik(Model3) 
+```
+
+    ## 'log Lik.' -1617.816 (df=9)
+
+``` r
+confint(Model3, oldNames = FALSE) 
+```
+
+    ## Computing profile confidence intervals ...
+
+    ##                                 2.5 %     97.5 %
+    ## sd_Group_dev|ITEM       0.00000000000  0.1275307
+    ## sd_(Intercept)|ITEM     0.12801996509  0.2046205
+    ## sd_Context_dev|Subject  0.00000000000  0.1166142
+    ## sd_(Intercept)|Subject  0.33506832830  0.5552401
+    ## sigma                   0.49958394424  0.5330077
+    ## (Intercept)             6.03255948558  6.3533549
+    ## Context_dev            -0.24893296018 -0.1514637
+    ## Group_dev              -0.02175743855  0.6009815
+    ## Context_dev:Group_dev  -0.00006843866  0.1943961
