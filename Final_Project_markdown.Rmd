@@ -5,80 +5,127 @@ date: "03/04/2020"
 output: github_document
 ---
 
-
 ```{r echo = FALSE}
 library(dplyr)
 library(lme4)
 library(lmerTest)
+library(lattice)
 library(tidyverse)
+library(wesanderson)
+library(effects)
+library(papaja)
 options(scipen = 999)
 ```
-Data loading and preprocessing
+
+1. Description of the learning objectives
+a demo of MLM in a cross-classified data structure
+Describe what it is, why it is important to know about that (super important in 
+a repeated measure design)
+
+2. Research questions
+a) do bilingual older adults process ambiguous words differently when they are embedded in sentences that clarify the meaning or not? -> Model 2
+(why would older bilingual adults differ from younger ones?)
+b) Does native language modulate the processing of ambiguous words? -> Model 3
+c) Does native language impact the processing of ambiguous words regardless of sentence context? -> Model 3
+
+3. Description of the variables and coding scheme
 ```{r}
-PSYC746_final <- read.csv("trt.csv")
+PSYC746_final <- read.csv("PSYC746_final.csv")
 ```
 
 
-```{r, echo = FALSE}
-colnames(PSYC746_final)[colnames(PSYC746_final)=="seq"] <- "Trial_order"
-colnames(PSYC746_final)[colnames(PSYC746_final)=="subj"] <- "Subject"
-colnames(PSYC746_final)[colnames(PSYC746_final)=="item"] <- "ITEM"
-colnames(PSYC746_final)[colnames(PSYC746_final)=="cond"] <- "Condition_nb"
-colnames(PSYC746_final)[colnames(PSYC746_final)=="R1"] <- "TRT_beginning"
-colnames(PSYC746_final)[colnames(PSYC746_final)=="R2"] <- "TRT_modifier"
-colnames(PSYC746_final)[colnames(PSYC746_final)=="R3"] <- "TRT_target"
-colnames(PSYC746_final)[colnames(PSYC746_final)=="R4"] <- "TRT_end"
-PSYC746_final$Group = ifelse(PSYC746_final$Subject <14, "English_L1", "French_L1")
-PSYC746_final$Condition = ifelse(PSYC746_final$Condition_nb == 1, "Modifier-dominant", 
-                                 (ifelse(PSYC746_final$Condition_nb == 2, "Modifier-subordinate", 
-                                         (ifelse(PSYC746_final$Condition_nb == 3, "Bare-dominant", 
-                                                 (ifelse(PSYC746_final$Condition_nb == 4, "Bare-subordinate", "DELETE")))))))
-PSYC746_final = subset(PSYC746_final, Condition != "DELETE")
-PSYC746_final$Context = ifelse(PSYC746_final$Condition_nb == 1, "Modifier", 
-                               (ifelse(PSYC746_final$Condition_nb == 2, "Modifier", "Bare")))
-PSYC746_final$WordType = ifelse(PSYC746_final$ITEM <33, "Cognate Homonym", "English Homonym")
-PSYC746_final$Dominance = ifelse(PSYC746_final$Condition_nb == 1, "Dominant", 
-                                 (ifelse(PSYC746_final$Condition_nb == 2, "Subordinate", 
-                                         (ifelse(PSYC746_final$Condition_nb == 3, "Dominant", "Subordinate")))))
-
-```
-
-Remove trials where target was skipped (TRT = NA)
-```{r, echo = TRUE}
-summary(PSYC746_final$TRT_target)
-```
-There are 25 skipped trials, which represents 1.24% of the data
-
+4. Descriptive stats
 ```{r}
-PSYC746_final = PSYC746_final %>% filter(!is.na(TRT_target))
+summary(PSYC746_final)
+length(unique(PSYC746_final$Subject))
+length(unique(PSYC746_final$ITEM))
 ```
 
-Histogram of the dependent variable (TRT)
-```{r, echo = FALSE}
-PSYC746_final$TRT_target = as.numeric(PSYC746_final$TRT_target)
-hist(PSYC746_final$TRT_target)
-```
-Heavily skewed: we need to transform it
+Functional form 
+*replace all of these plots with bar plots, more readable...
 
-```{r, echo = TRUE}
-PSYC746_final$log_TRT_target = log(PSYC746_final$TRT_target)
-hist(PSYC746_final$log_TRT_target)
+Plot relationship predictors-DV
+```{r}
+PSYC746_final %>% ggplot(mapping = aes(x = Context, y = log_TRT_target)) +
+  geom_point() +
+  facet_wrap(~Group)
 ```
 
-Recode variable (effects coding)
-```{r, echo = FALSE}
-PSYC746_final$Group_dev =ifelse(PSYC746_final$Group == "English_L1", -0.5, 0.5)
-PSYC746_final$WordType_dev =ifelse(PSYC746_final$WordType == "English Homonym", -0.5, 0.5)
-PSYC746_final$Dominance_dev =ifelse(PSYC746_final$Dominance == "Dominant", -0.5, 0.5)
-PSYC746_final$Context_dev =ifelse(PSYC746_final$Context == "Bare", -0.5, 0.5)
+Correlation predictors-DV
+```{r}
+PSYC746_final %>% 
+  select(log_TRT_target, Group_dev, Context_dev) %>%
+  cor()
+```
+.20 correlation between Group and log TRT
+-.14 correlation between Context and log TRT
+
+Grid scatterplots predictors-DV
+Context-participants
+```{r}
+PSYC746_final %>% 
+  ggplot() +
+  geom_point(mapping = aes(x = Context_dev, y = log_TRT_target)) +
+  facet_wrap(~Subject)
+```
+Most participants follow the expected pattern, but not all (Participant 19 for example)
+
+Context-items
+```{r}
+PSYC746_final %>% 
+  ggplot() +
+  geom_point(mapping = aes(x = Context_dev, y = log_TRT_target)) +
+  facet_wrap(~ITEM)
+```
+Most items follow the expected pattern, but not all (item 2, item 50 for example)
+
+Group-items
+```{r}
+PSYC746_final %>% 
+  ggplot() +
+  geom_point(mapping = aes(x = Group_dev, y = log_TRT_target)) +
+  facet_wrap(~ITEM)
+```
+Pattern is unclear--it looks like some items were read faster by L1 English, but not all
+
+Plot with regression line
+Context by participant
+```{r}
+PSYC746_final %>% 
+  group_by(Subject) %>% 
+ggplot(mapping = aes(x = Context_dev, y = log_TRT_target, colour = factor(Subject))) +
+  geom_point(show.legend = FALSE) +
+  geom_smooth(method = lm, se = FALSE, show.legend = FALSE)
 ```
 
-I. Model 1 (null)
+Context by item
+```{r}
+PSYC746_final %>% 
+  group_by(ITEM) %>% 
+ggplot(mapping = aes(x = Context_dev, y = log_TRT_target, colour = factor(ITEM))) +
+  geom_point(show.legend = FALSE) +
+  geom_smooth(method = lm, se = FALSE, show.legend = FALSE)
+```
+
+Group by item
+```{r}
+PSYC746_final %>% 
+  group_by(ITEM) %>% 
+ggplot(mapping = aes(x = Group_dev, y = log_TRT_target, colour = factor(ITEM))) +
+  geom_point(show.legend = FALSE) +
+  geom_smooth(method = lm, se = FALSE, show.legend = FALSE)
+```
+
+5. Models
+
+a. Model 1 (null)
 
 ```{r}
 Null = lmer(log_TRT_target ~ 1+(1|Subject) + (1|ITEM), data=PSYC746_final, REML = T)
 summary(Null)
 ```
+
+Interpretation:
 
 ICC calculation
 
@@ -123,8 +170,6 @@ DEFT = sqrt(DEFF)
 DEFT participants = 5.074
 SE are 5.105 times larger than estimated
 
-
-
 DEFF by items
 Calculate the mean number of observations per item
 ```{r}
@@ -149,7 +194,9 @@ DEFT2 = sqrt(DEFF2)
 DEFT items = 1.592
 SE are 1.592 times larger than estimated
 
-II. Model 2
+The use of a MLM is warranted by the ICC and the DEFF.
+
+b. Model 2
 
 ```{r}
 Model2 = lmer(log_TRT_target ~ Context_dev +
@@ -158,6 +205,9 @@ Model2 = lmer(log_TRT_target ~ Context_dev +
 summary(Model2)
 ```
 
+Interpretation:
+
+Model comparison
 Deviance
 ```{r}
 3298.2-3237.2
@@ -170,7 +220,7 @@ confint(Model2, oldNames = FALSE)
 ```
 
 ```{r}
-anova(Null, Model2)
+anova(Null, Model2, refit = FALSE)
 ```
 This confirms that Model 2 has better fit than the null model
 
@@ -235,10 +285,124 @@ lower_range <- 6.22001 - SDx2
 ```
 5.896-6.544
 
+c. Model 3
+```{r}
+Model3 = lmer(log_TRT_target ~ Context_dev*Group_dev+
+                (1+Context_dev||Subject) + 
+                (1|ITEM), data=PSYC746_final, REML = T)
+summary(Model3)
+```
+
+Interpretation:
+
+Visualization of the interaction (not significant)
+```{r}
+ef <- as.data.frame(Effect(c("Context_dev", "Group_dev"), Model3))
+ef
+ef$Context = ifelse(ef$Context_dev == -0.5, "Bare", ifelse(ef$Context_dev == 0.5, "Modifier", "HDUEHEIQU"))
+ef$Group = ifelse(ef$Group_dev == -0.5, "L1 English", ifelse(ef$Group_dev == 0.5, "L1 French", "HDUEHEIQU"))
+ef = subset(ef, Context != "HDUEHEIQU" & Group != "HDUEHEIQU")
+
+ggplot(ef, aes(x=Context, y=fit)) +
+  geom_bar(stat="identity", position="dodge", aes(fill=Context)) +
+  scale_fill_manual(values = wes_palette("GrandBudapest2"))+
+  geom_errorbar(aes(ymin=fit-se, ymax=fit+se), width=.3, size = .6) +
+  labs(y="TRT of the target ambiguous word\n(log ms, fitted)", x = "Prior sentence context", fill="") +
+  facet_wrap(~Group)+
+  coord_cartesian(ylim=c(4,7)) +
+  theme_apa()+
+  theme_bw(base_size = 20) +
+  theme(legend.position = "none", axis.text.x = element_text(size = 16), 
+        axis.text.y = element_text(size = 16), axis.title.x= element_text(size = 16),
+        axis.title.y = element_text(size = 16), strip.text.x = element_text(size = 16),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
+```
+
+Model comparison
+```{r}
+logLik(Model3) 
+confint(Model3, oldNames = FALSE) 
+```
+Log likelihood model 2 = -1618.578 vs. model 3 = -1617.816. So model 2 (simpler) is better (i.e., log likelihood is more negative)
+Profile confidence interval for group, context*group, and for the random slope for context include 0. So all the stuff we added is probably not increasing the fit.
+
+Deviance
+```{r}
+3237.2-3235.6
+```
+Model 3 is not significantly better in terms of fit than model 2 (X2(3) = 1.6, p > .05)
+
+```{r}
+anova(Model2, Model3, refit = FALSE)
+```
+This confirms that Model 2 has better fit than the null model
+
+Difference in residuals
+```{r}
+tau2change_p = 0.20535-0.190874
+```
+.014
+
+```{r}
+tau2change_i = 0.02621-0.026274
+```
+-.000
+
+```{r}
+sigma2change = 0.26718-0.266246
+```
+.001
+
+Adding this predictor does not really impact the residuals
+
+```{r}
+L1_var_reduction <- sigma2change / 0.26718
+```
+.003
+
+```{r}
+L2_var_reduction_p <- tau2change_p/0.20535
+```
+.070
+
+```{r}
+L2_var_reduction_i <- tau2change_i/0.02621
+```
+-.002
+
+Random variance by participants is slightly reduced  
+
+Conditional ICC
+```{r}
+conditionalICC_p = 0.190874/ (0.190874 + 0.026274+0.266246)
+conditionalICC_i = 0.026274 / (0.026274 + 0.190874+ 0.266246)
+```
+39.49% of the variance is due to variability between subjects
+5.44% of the variance is due to variability between items
+
+95% plausible values range for intercepts--How much do means vary across participants?
+
+```{r}
+SDx2 <- (2*(sqrt(0.190874)))
+Upper_range <- 6.19294 + SDx2
+lower_range <- 6.19294 - SDx2
+```
+5.319-7.067
+
+95% plausible values range for intercepts--How much do means vary across items?
+
+```{r}
+SDx2 <- (2*(sqrt(0.026274)))
+Upper_range <- 6.19294 + SDx2
+lower_range <- 6.19294 - SDx2
+```
+5.869-6.517
+
+ASSUMPTION CHECKS
+
 Distribution of L1 residuals
 ```{r}
-#L1 residuals
-l1_residuals <- tibble::enframe(residuals(Model2))
+l1_residuals <- tibble::enframe(residuals(Model3))
 PSYC746_final <- PSYC746_final %>% 
   bind_cols(l1_residuals) %>% 
   select(-name) %>% 
@@ -252,14 +416,18 @@ PSYC746_final %>% ggplot(mapping = aes(x = l1resid)) +
 
 Distribution of L2 residuals
 ```{r}
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 
-PSYC746_finalByParticRanef <- ranef(Model2)$Subject[['(Intercept)']]
-qqnorm(PSYC746_finalByParticRanef,  main = "participant means") #2 weirdos
+PSYC746_finalByParticRanef <- ranef(Model3)$Subject[['(Intercept)']]
+qqnorm(PSYC746_finalByParticRanef,  main = "participant intercepts") #2 weirdos
 qqline(PSYC746_finalByParticRanef)
 
-PSYC746_finalByItemRanef <- ranef(Model2)$ITEM[['(Intercept)']]
-qqnorm(PSYC746_finalByItemRanef,  main = "item means") #1 weirdo
+PSYC746_finalByParticRanef_slope <- ranef(Model3)$Subject[['Context_dev']]
+qqnorm(PSYC746_finalByParticRanef_slope,  main = "participant slopes") #OK
+qqline(PSYC746_finalByParticRanef_slope)
+
+PSYC746_finalByItemRanef <- ranef(Model3)$ITEM[['(Intercept)']]
+qqnorm(PSYC746_finalByItemRanef,  main = "item intercepts") #1 weirdo
 qqline(PSYC746_finalByItemRanef)
 ```
 
@@ -268,28 +436,37 @@ qqline(PSYC746_finalByItemRanef)
 Summary statistics L2 residuals
 ```{r}
 summary(PSYC746_finalByParticRanef)
+summary(PSYC746_finalByParticRanef_slope)
 summary(PSYC746_finalByItemRanef)
 ```
-mean of 0, which is great, but median is different, so there is a hint of nonnormality
+mean of 0, which is great, but medians are not, so there is a hint of nonnormality
 
-Plot L2 residuals-participants
+Plot L2 residuals-participants (intercept)
 
 ```{r, echo = FALSE, warning = FALSE}
-l2_residuals_p <- ranef(Model2)$Subject
+l2_residuals_p <- ranef(Model3)$Subject
 l2_residuals_p %>% 
   ggplot(mapping = aes(x = `(Intercept)`)) +
   geom_histogram()
 ```
 
-Plot L2 residuals - Items
+Plot L2 residuals - Items (intercept)
 ```{r, echo = FALSE, warning  = FALSE}
-l2_residuals_i <- ranef(Model2)$ITEM
+l2_residuals_i <- ranef(Model3)$ITEM
 l2_residuals_i %>% 
   ggplot(mapping = aes(x = `(Intercept)`)) +
   geom_histogram()
 ```
 
-Flag outliers-participants
+Plot L2 residuals - Participants (slope)
+```{r}
+l2_residuals_p %>% 
+  ggplot(mapping = aes(x = Context_dev)) +
+  geom_histogram()
+```
+
+
+Flag outliers-participants (intercept)
 
 ```{r, echo = FALSE}
 is_outlier <- function(x) {
@@ -307,7 +484,7 @@ ggplot(temp_int, aes(y = `(Intercept)`, x = 0)) +
 ```
 Participant 29 and 8 are outliers
 
-Flag outliers-items
+Flag outliers-items (intercept)
 ```{r, echo = FALSE, warning = FALSE}
 temp_int <- l2_residuals_i %>% 
   tibble::rownames_to_column(var="outlier") %>% 
@@ -318,9 +495,137 @@ ggplot(temp_int, aes(y = `(Intercept)`, x = 0)) +
   geom_boxplot()  +
   geom_text(aes(label = outlier), na.rm = TRUE, nudge_y = 0.2)
 ```
-Item 2 is an outlier
+Item 2 is an outlier ("axes")
 
-Relatedness of l2_predictors and l2_residuals (participants)
+Flag outliers-participants (slope)
+```{r}
+is_outlier <- function(x) {
+  return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+}
+
+temp_int <- l2_residuals_p %>% 
+  tibble::rownames_to_column(var="outlier") %>% 
+  mutate(is_outlier = ifelse(is_outlier(`Context_dev`), `Context_dev`, as.numeric(NA)))
+temp_int$outlier[which(is.na(temp_int$is_outlier))] <- as.numeric(NA)
+
+ggplot(temp_int, aes(y = `(Intercept)`, x = 0)) +
+  geom_boxplot()  +
+  geom_text(aes(label = outlier), na.rm = TRUE, nudge_y = 0.2)
+```
+No outlier flagged
+
+As an aside, what if we removed these outliers?
+
+```{r}
+Model3bis <- update(Model3, . ~ ., data=filter(PSYC746_final, Subject != c(8, 29)))
+summary(Model3bis)
+```
+Removing outlier participants does not drastically change the effects: the effect of 
+"Group", which was borderline significant, is now at .10. The interaction coefficient is still borderline significant.
+I tried removing both participants and the item, the model would not converge anymore (I do not have a lot of data to begin with).
+When I remove the item...
+```{r}
+Model3bis <- update(Model3, . ~ ., data=filter(PSYC746_final, ITEM != 2))
+summary(Model3bis)
+```
+No change to the effects
+
+!!Relatedness!!
+
+A. Relatedness of L2 predictors and L2 residuals
+Relatedness of L2 predictors (context) and L2 residuals (intercept participant)
+```{r}
+l2_residuals_rowname_p <- rownames_to_column(l2_residuals_p) %>% 
+  rename("Subject" = rowname) %>%
+  mutate("Subject" = as.integer(Subject)) %>% 
+  rename(L2resid_p = '(Intercept)') %>%
+  rename(L2resid_slope = 'Context_dev') %>%
+  as_tibble()
+
+l2_mix <- merge(l2_residuals_rowname_p, PSYC746_final, by = "Subject")
+
+l2_mix %>% ggplot(mapping = aes(x = L2resid_p, y = Context_dev)) +
+  geom_point() +
+  labs(x = "Residuals participants", y = "Context")
+cor.test(l2_mix$L2resid_p, l2_mix$Context_dev)
+```
+No significant correlation L2 residuals-participant and Context
+
+Relatedness of L2 predictors (group) and L2 residuals (intercept participant)
+```{r}
+l2_mix %>% ggplot(mapping = aes(x = L2resid_p, y = Group_dev)) +
+  geom_point() +
+  labs(x = "Residuals participants", y = "Group")
+cor.test(l2_mix$L2resid_p, l2_mix$Group_dev) 
+```
+No significant correlation L2 residuals- intercept participant and Group
+
+Relatedness of l2 predictor (context) and l2_residuals (intercept items)
+```{r}
+l2_residuals_rowname_i <- rownames_to_column(l2_residuals_i) %>% 
+  rename("ITEM" = rowname) %>%
+  mutate("ITEM" = as.integer(ITEM)) %>% 
+  rename(L2resid_i = '(Intercept)') %>%
+  as_tibble()
+
+l2_mix <- merge(l2_residuals_rowname_i, PSYC746_final, by = "ITEM")
+
+l2_mix %>% ggplot(mapping = aes(x = L2resid_i, y = Context_dev)) +
+  geom_point() +
+  labs(x = "Residuals items", y = "Context")
+cor.test(l2_mix$L2resid_i, l2_mix$Context_dev) 
+```
+No significant correlation L2 residuals (intercept items) and context
+
+Relatedness of L2 predictors (group) and L2 residuals (intercept items)
+```{r}
+l2_mix %>% ggplot(mapping = aes(x = L2resid_i, y = Group_dev)) +
+  geom_point() +
+  labs(x = "Residuals items", y = "Group")
+cor.test(l2_mix$L2resid_i, l2_mix$Group_dev) 
+```
+No significant correlation L2 residuals (intercept items) and group
+
+Relatedness of L2 prediction (context) and L2_residuals (slope context participant)
+```{r}
+l2_mix %>% ggplot(mapping = aes(x = L2resid_slope, y = Context_dev)) +
+  geom_point() +
+  labs(x = "Residual slope by participants", y = "Context")
+cor.test(l2_mix$L2resid_slope, l2_mix$Context_dev)
+```
+No correlation L2 residuals (slope participants) and context
+
+Relatedness of L2 predictor (group) and L2 residuals (slope context participant)
+```{r}
+l2_mix %>% ggplot(mapping = aes(x = L2resid_slope, y = Group_dev)) +
+  geom_point() +
+  labs(x = "Residual slope by participants", y = "Group")
+cor.test(l2_mix$L2resid_slope, l2_mix$Group_dev)
+```
+No correlation L2 residuals (slope participants) and group
+
+B. Relatedness of L2 predictors and L1 residuals
+
+Relatedness of L2 predictors (context) and L1 residuals
+```{r}
+PSYC746_final %>% ggplot(mapping = aes(x = l1resid, y = Context_dev)) +
+  geom_point() +
+  labs(x = "Residuals", y = "Context")
+cor.test(PSYC746_final$l1resid, PSYC746_final$Context_dev) 
+```
+No significant correlation
+
+Relatedness of L2 predictors (group) and L1 residuals
+```{r}
+PSYC746_final %>% ggplot(mapping = aes(x = l1resid, y = Group_dev)) +
+  geom_point() +
+  labs(x = "Residuals", y = "Group")
+cor.test(PSYC746_final$l1resid, PSYC746_final$Group_dev) 
+```
+No significant correlation
+
+C. Relatedness of L1 and L2 residuals
+Relatedness of l1_residuals and l2_residuals (intercept participants)
 ```{r, echo = FALSE, warning = FALSE}
 l2_residuals_rowname <- rownames_to_column(l2_residuals_p) %>% 
   rename("Subject" = rowname) %>%
@@ -328,14 +633,16 @@ l2_residuals_rowname <- rownames_to_column(l2_residuals_p) %>%
   rename(intercept_residual = `(Intercept)`) %>%
   as_tibble()
 
-PSYC746_final <- full_join(PSYC746_final, l2_residuals_rowname) 
+PSYC746_final <- full_join(PSYC746_final, l2_residuals_rowname, by = "Subject") 
 
 PSYC746_final %>%
   ggplot() + 
   geom_point(mapping = aes(x = l1resid, y = intercept_residual))
 ```
 
-Relatedness of l2_predictors and l2_residuals (items)
+Again, 2 clear outliers
+
+Relatedness of l1_residuals and l2_residuals (intercept items)
 ```{r, echo = FALSE, warning = FALSE}
 l2_residuals_rowname2 <- rownames_to_column(l2_residuals_i) %>% 
   rename("ITEM" = rowname) %>%
@@ -350,17 +657,47 @@ PSYC746_final %>%
   geom_point(mapping = aes(x = l1resid, y = intercept_residual2))
 ```
 
-III. Model 3
-```{r}
-Model3 = lmer(log_TRT_target ~ Context_dev*Group_dev+
-                (1+Context_dev||Subject) + 
-                (1+Group_dev||ITEM), data=PSYC746_final, REML = T)
-summary(Model3)
+Relatedness of l1_residuals and l2_residuals (slope participants)
+```{r, echo = FALSE, warning = FALSE}
+l2_residuals_rowname <- rownames_to_column(l2_residuals_p) %>% 
+  rename("Subject" = rowname) %>%
+  mutate("Subject" = as.integer(Subject)) %>% 
+  rename(slope_residual = `Context_dev`) %>%
+  as_tibble()
+
+PSYC746_final <- full_join(PSYC746_final, l2_residuals_rowname, by = "Subject") 
+
+PSYC746_final %>%
+  ggplot() + 
+  geom_point(mapping = aes(x = l1resid, y = slope_residual))
 ```
 
+D. Relatedness L2 residuals and L2 residuals
+
+L2 intercept (participant)-L2 slope (participants)
 ```{r}
-logLik(Model3) 
-confint(Model3, oldNames = FALSE) 
+l2_mix %>% ggplot(mapping = aes(x = L2resid_p, y = L2resid_slope)) +
+  geom_point() +
+  labs(x = "Intercept participants", y = "Slope Context by participant")
+cor.test(l2_mix$L2resid_p, l2_mix$L2resid_slope) 
 ```
+There is a moderate correlation (significant) > the higher the mean log_TRT_value for an individual, the smaller the effect of context for this individual
 
+L2 intercept (participant)-L2 intercept (item)
+```{r}
+l2_mix2 <- merge(l2_mix, l2_residuals_rowname_i, by = "ITEM")
+l2_mix2 %>% ggplot(mapping = aes(x = L2resid_p, y = L2resid_i)) +
+  geom_point() +
+  labs(x = "Intercept participants", y = "Intercept items")
+cor.test(l2_mix2$L2resid_p, l2_mix2$L2resid_i)
+```
+No correlation intercept participant-intercept item
 
+L2 intercept (items)-L2 slope (participants)
+```{r}
+l2_mix2 %>% ggplot(mapping = aes(x = L2resid_i, y = L2resid_slope)) +
+  geom_point() +
+  labs(x = "Intercept items", y = "Slope Context by participant")
+cor.test(l2_mix2$L2resid_i, l2_mix2$L2resid_slope) 
+```
+No correlation intercept items-random slope Context by participant
