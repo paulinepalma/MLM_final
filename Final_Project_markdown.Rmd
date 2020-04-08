@@ -588,6 +588,7 @@ No significant correlation L2 residuals (intercept items) and group
 
 Relatedness of L2 prediction (context) and L2_residuals (slope context participant)
 ```{r}
+l2_mix <- merge(l2_residuals_rowname_p, PSYC746_final, by = "Subject")
 l2_mix %>% ggplot(mapping = aes(x = L2resid_slope, y = Context_dev)) +
   geom_point() +
   labs(x = "Residual slope by participants", y = "Context")
