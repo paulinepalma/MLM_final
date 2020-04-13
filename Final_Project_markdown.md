@@ -1,40 +1,49 @@
-Final\_Project\_markdown
+Final Project Demo
 ================
 Pauline Palma
 03/04/2020
 
-# 1\. Description of the learning objectives
+# <span style="color: purple;"> 1. Description of the learning objectives</span>
 
 Welcome to this demo\!
 
-Today, you will learn about cross-classified multilevel models, a type
+Today, you will learn about *cross-classified multilevel models*, a type
 of model that is commonly found in various domains of experimental
-psychology, such as social psychology or psycholinguistics.
+psychology. We will use an example from psycholinguistics, where this
+type of MLM is common.
 
-A cross-classified multilevel model allows one to estimate the unique
-influence of two distinct Level 2 clusters. For instance,
-cross-classified MLM have been used in social psychology to assess
-variance in social impression formation (for a review, see Xie et al.,
-2018). In a social interaction, the impressions formed depend both on
-perceiver and on target characteristics, such as race and gender.
-Cross-classified MLM are especially useful there, as they allow for the
-partitioning of variance in impressions between perceivers and targets.
+  - What is a cross-classified multilevel model? A cross-classified
+    multilevel model allows one to estimate the unique influence of two
+    distinct Level 2 clusters. For instance, cross-classified MLM have
+    been used in social psychology to assess variance in social
+    impression formation (for a review, see Xie et al., 2018). In a
+    social interaction, the impressions formed depend both on perceiver
+    and on target characteristics, such as race and gender.
+    Cross-classified MLM are especially useful there, as they allow for
+    the partitioning of variance in impressions between perceivers and
+    targets.
 
-Cross-classified MLM are also common in psycholinguistics, as they allow
-researchers to estimate the unique influence of individual participants
-and of infividual items, such as words or sentences. This is especially
-useful, as psycholinguists are usually interested in both participants’
+In psycholinguistics, cross-classified MLM allow researchers to estimate
+the unique influence of individual participants and of individual items,
+such as words or sentences. This is especially useful, as
+psycholinguists are usually interested in both participants’
 characteristics (e.g., their age, native language, etc.) and items’
-characteristics (e.g., word length, frequency, etc.).
+characteristics (e.g., word length, frequency, etc.). A typical data
+structure in psycholinguistics involves multiple observations (Level 1)
+per participant (Level 2) and multiple observations per item (Level 2)
+(Baayen, Davidson, & Bates, 2008). It is important to emphasize that the
+two level 2 clusters are the primary units of interest for
+psycholinguists, whereas level 1 units (observations/trials) are usually
+not.
 
-In the present demo, we try to model total reading time (an eye-tracking
-measure) as a function of participant’s native language and item’s
-sentence context. Cross-classified MLM allow us to account for
-participant variability (e.g., some participants might be slower than
-others) and for item variability (e.g., some words might be less
-familiar to the participants).
+  - In the present demo, we try to model total reading time (an
+    eye-tracking measure) as a function of participant’s native language
+    and item’s sentence context. Cross-classified MLM allow us to
+    account for participant variability (e.g., some participants might
+    be slower than others) and for item variability (e.g., some words
+    might be less familiar to the participants).
 
-# 2\. Research questions
+# <span style="color: purple;"> 2. Research context and questions</span>
 
 Human languages are inherently ambiguous. An important aspect of
 language processing is to make sense of this ambiguity. For example,
@@ -49,12 +58,13 @@ times on the ambiguous word (Rayner et al., 1994).
 Importantly, reading speed is also impacted by participants’
 characteristics. For instance, non-native readers usually exhibit slower
 reading time compared to native readers, due to lower reading
-proficiency (e.g., ). Older adults are also slower compared to younger
-readers, due to slower processing speed (e.g., ). There is also some
-evidence that contextual sentence specifically impacts reading times for
-ambiguous words in non-native speakers (Palma, Whitford, & Titone, 2019;
-see also Arêas da Luz Fontes & Schwartz, 2010, 2015; Schwartz, Yeh, &
-Shaw, 2008). However, it is unclear if these effects extend to older
+proficiency (see Brysbaert, 2019, for a review). Older adults are also
+slower compared to younger readers, due to slower processing speed (see
+Rossi & Diaz, 2016, for a review). There is also some evidence that
+contextual sentence specifically impacts reading times for ambiguous
+words in non-native speakers (Palma, Whitford, & Titone, 2019; see also
+Arêas da Luz Fontes & Schwartz, 2010, 2015; Schwartz, Yeh, & Shaw,
+2008). However, it is unclear whether these effects extend to older
 bilingual speakers, as participants in these studies were young adults
 (18-35 years old). Because the effects of bilingualism have been shown
 to change across the lifespan (Whitford & Titone, 2019), it would be
@@ -67,8 +77,8 @@ while their eye movements were recorded. Participants were either
 French-English (reading in their second language) or English-French
 (reading in their first language) older bilinguals. The homonyms were
 embedded in sentences that either contained a modifier (e.g., adjective)
-related to one of the two meanings (e.g., Mary liked the fresh/elder
-sage), or did not contain such a modifier (e.g. mary liked the sage).
+related to one of the two meanings (e.g., Mary liked the fresh sage), or
+did not contain such a modifier (e.g., Mary liked the sage).
 
 We constructed three models (including a null model) to answer four
 specific research questions:
@@ -79,10 +89,10 @@ specific research questions:
 2)  Does the effect of context vary across participants? -\> Model 3
 3)  Does native language modulate the processing of ambiguous words? -\>
     Model 3
-4)  Does context impact impact the processing of ambiguous words
-    regardless of native language? -\> Model 3
+4)  Does context impact the processing of ambiguous words regardless of
+    native language? -\> Model 3
 
-# 3\. Description of the variables
+# <span style="color: purple;">3. Description of the variables</span>
 
 ``` r
 PSYC746_final <- read.csv("PSYC746_final.csv")
@@ -131,56 +141,36 @@ lines, representing the 1988 trials completed by all participants.
     system. This measure is thought to reflect ambiguity resolution and
     meaning integration processes. It was logged to correct for skew.
     This is the dependent variable in the models.
-  - Group\_dev: language group, that is, whether the first language
-    acquired by the participant was English (English as a first
-    language) or French (French as a first language). This was assessed
-    via a language history questionnaire. This variable was
-    effects-coded (-.5: English as a first language, .5: French as a
-    first language). This is a characteristic of participants (level-2)
-    and a predictor.
-  - Context\_dev: sentence context, that is, whether the sentence
-    contained a modifier (usually, an adjective) related to one of the
-    homonym’s meanings or not. This variable was effects-coded (-.5: no
-    modifier, .5: modifier). This is a characteristic of items (level-2)
-    and a predictor.
+  - Group\_dev: the language group the participant belongs to. All
+    participants know both English and French. For some, English is the
+    first language they acquired (English-French bilinguals), for other,
+    French is the first language they acquired (French-English
+    bilinguals). This was assessed via a language history questionnaire.
+    This variable was effects-coded (-.5: English-French bilinguals, .5:
+    French-English bilinguals). This is a characteristic of participants
+    (level-2) and a predictor.
+  - Context\_dev: the sentence context in which the target ambiguous
+    word was embedded, that is, whether the sentence contained a
+    modifier (usually, an adjective) related to one of the homonym’s
+    meanings or not. This variable was effects-coded (-.5: no modifier,
+    .5: modifier). E.g., “Mary liked the **fresh sage** vs.”Mary liked
+    the sage". This is a characteristic of items (level-2) and a
+    predictor.
 
-# 4\. Description/visual of the data structure
+# <span style="color: purple;">4. Description/visual of the data structure</span>
 
 We first verify the functional form of the variables of interest by
 plotting them.
 
-  - Dependent
-variable
+  - Dependent variable
+    ![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+    The DV is not perfectly normally distributed (skew to the right).
 
-<!-- end list -->
-
-``` r
-hist(PSYC746_final$log_TRT_target)
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
-The DV is not perfectly normally distributed (skew to the right).
-
-  - Relationship predictors & dependent
-variable
-
-<!-- end list -->
-
-``` r
-PSYC746_final %>% ggplot(mapping = aes(x = Context_dev, y = log_TRT_target)) +
-  geom_bar(stat="identity", position="dodge", aes(fill=Context_dev)) +
-  facet_wrap(~Group_dev) +
-  labs(x="Context", y = "TRT of the target ambiguous word\n(log ms)", fill="") +
-  coord_cartesian(ylim=c(6,9)) +
-  theme_apa()+
-  theme_bw(base_size = 20) +
-  theme(legend.position = "none", axis.text.x = element_text(size = 16), 
-        axis.text.y = element_text(size = 16), axis.title.x= element_text(size = 16),
-        axis.title.y = element_text(size = 12), strip.text.x = element_text(size = 16),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+  - Relationship predictors & dependent variable
+    ![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+    Target ambiguous words are read slower when there is no modifier,
+    although the difference between the modifier and the no modifier
+    condition is reduced for French-English bilingual older adults.
 
   - Correlation predictors & dependent variable
 
@@ -200,99 +190,55 @@ PSYC746_final %>%
 .20 correlation between Group and log TRT -.14 correlation between
 Context and log TRT
 
-  - Individual scatterplots
+  - Individual
+scatterplots
 
-<!-- end list -->
-
-``` r
-PSYC746_final %>% 
-  ggplot() +
-  geom_point(mapping = aes(x = Context_dev, y = log_TRT_target)) +
-  facet_wrap(~Subject) +
-  coord_cartesian(ylim=c(4,10))
-```
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+Most participants follow the expected pattern, in that they exhibit
+faster log TRT when Context = Modifier. Some participants (e.g., 19) do
+not seem to follow this
+pattern.
 
 ![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-Most participants follow the expected pattern, in that they exhibit
-faster log TRT when Context = .5 (i.e., when a modifier is present).
-Some participants (e.g., 19) do not seem to follow this pattern.
-
-``` r
-PSYC746_final %>% 
-  ggplot() +
-  geom_point(mapping = aes(x = Context_dev, y = log_TRT_target)) +
-  facet_wrap(~ITEM) +
-  coord_cartesian(ylim=c(4,10))
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 Most items follow the expected pattern, in that they are associated with
 lower log TRT when a modifier related to one of their meanings is
 present in the sentence. Not all items follow this pattern (item 2, item
-50 for example).
+50 for
+example).
 
-``` r
-PSYC746_final %>% 
-  ggplot() +
-  geom_point(mapping = aes(x = Group_dev, y = log_TRT_target)) +
-  facet_wrap(~ITEM)+
-  coord_cartesian(ylim=c(4,10))
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 The pattern is unclear–it looks like some items, but not all, were read
-faster by bilingual participants with English as their native language.
+faster by bilingual participants with English as their first language.
 
-  - Regression line
+  - Regression
+line
 
 <!-- end list -->
 
-``` r
-PSYC746_final %>% 
-  group_by(Subject) %>% 
-ggplot(mapping = aes(x = Context_dev, y = log_TRT_target, colour = factor(Subject))) +
-  geom_point(show.legend = FALSE) +
-  geom_smooth(method = lm, se = FALSE, show.legend = FALSE)
-```
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+At the subject level, a modifier in the sentence context (Context\_dev =
+0.5) is associated with decreased log TRT.
+
+Context by
+item
 
     ## `geom_smooth()` using formula 'y ~ x'
 
 ![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
-At the subject level, a modifier in the sentence context (Context\_dev =
-.5) is associated with decreased log TRT.
-
-Context by item
-
-``` r
-PSYC746_final %>% 
-  group_by(ITEM) %>% 
-ggplot(mapping = aes(x = Context_dev, y = log_TRT_target, colour = factor(ITEM))) +
-  geom_point(show.legend = FALSE) +
-  geom_smooth(method = lm, se = FALSE, show.legend = FALSE)
-```
+At the item level, it is less clear that a modifier in the sentence
+context (Context\_dev = 0.5) is associated with decreased log TRT (some
+items are associated with higher log TRT in such sentence
+contexts.
 
     ## `geom_smooth()` using formula 'y ~ x'
 
 ![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
-At the item level, it is less clear that a modifier in the sentence
-context (Context\_dev = .5) is associated with decreased log TRT (some
-items are associated with higher log TRT in such sentence contexts.
-
-``` r
-PSYC746_final %>% 
-  group_by(ITEM) %>% 
-ggplot(mapping = aes(x = Group_dev, y = log_TRT_target, colour = factor(ITEM))) +
-  geom_point(show.legend = FALSE) +
-  geom_smooth(method = lm, se = FALSE, show.legend = FALSE)
-```
-
-    ## `geom_smooth()` using formula 'y ~ x'
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 Items are associated with increased log TRT when they are read by
-participants whose native language is French (Group\_dev: .5).
+French-English bilingual participants (Group\_dev = 0.5).
 
-# 5\. Models and interpretation
+# <span style="color: purple;">5. Models and interpretation</span>
 
 ## a. Model 1 (null)
 
@@ -301,39 +247,45 @@ participants whose native language is French (Group\_dev: .5).
 The equation for a cross-classified model is different from the usual
 MLM equation. Below, we spelled out all the terms.
 
-L1: TRTi(j1k1) = 𝜋0(j1k1) + ei(j1k1) L2: 𝜋0(j1k1) = 𝜃000 + b0j10 + c00k1
+  - L1: TRTi(j1k1) = 𝜋0(j1k1) + ei(j1k1)
+  - L2: 𝜋0(j1k1) = 𝜃000 + b0j10 + c00k1
 
 We estimate 4 parameters (1 fixed effect, 3 random effects) with this
-null model. Level 1 is the trial level TRTi(j1k1) is the TRT of the
-trial for item j1 and participant k1 𝜋0(j1k1) is the expected value for
-TRT for this item and this participant ei(j1k1) is the error term, which
-accounts for error for variability with respect to participant and item
-level
+null model. Level 1 is the trial level \* TRTi(j1k1) is the TRT of the
+trial for item j1 and participant k1 \* 𝜋0(j1k1) is the expected value
+for TRT for this item and this participant \* ei(j1k1) is the error
+term, which accounts for error for variability with respect to
+participant and item level
 
 Level2 is the cluster level: there are two distinct clusters, such that
 trials are grouped both under participants and under items.
 
-𝜋0(j1k1) is the expected value for TRT, that can vary across
-participants and items, which allows the total variance of the model to
-be partitioned into that attributable to participants and items 𝜃000 is
-the grand mean for TRT, averaged across all items and participants b0j10
-is the residual of the item j1 averaged across all participants (i.e.,
-the difference between the grand mean and the TRT of target j1), which
-has variance tb00 c00k1 is the residual of participant k1 averaged
-across all items (i.e., the difference between the grand mean and the
-TRT of participant k1), which has variance tc00
+  - 𝜋0(j1k1) is the expected value for TRT, that can vary across
+    participants and items, which allows the total variance of the model
+    to be partitioned into that attributable to participants and items
 
-\*Usually, cross-classified MLM also include another term, d0(j1k1),
-which is the interaction between item and participant variance in the
-model. However, to be able to estimate the random effect associated with
-this interaction requires repeated reading of a single item by each
-participant, in order to separate the variance associated with this
-interaction from the residual variance. In the present study, each
-participant read each item only once, so we are unable to estimate this
-component and it is fixed to zero (not estimated). We have therefore
-only have three variance terms in the model: variance across items,
-variance across participants, and variance of the L1 error term
-ei(j1k1).
+  - 𝜃000 is the grand mean for TRT, averaged across all items and
+    participants
+
+  - b0j10 is the residual of the item j1 averaged across all
+    participants (i.e., the difference between the grand mean and the
+    TRT of target j1), which has variance tb00 \* c00k1 is the residual
+    of participant k1 averaged across all items (i.e., the difference
+    between the grand mean and the TRT of participant k1), which has
+    variance tc00
+
+  - *Usually, cross-classified MLM also include another term, d0(j1k1),
+    which is the interaction between item and participant variance in
+    the model. However, to be able to estimate the random effect
+    associated with this interaction requires repeated reading of a
+    single item by each participant, in order to separate the variance
+    associated with this interaction from the residual variance. In the
+    present study, each participant read each item only once, so we are
+    unable to estimate this component and it is fixed to zero (not
+    estimated). We have therefore only have three variance terms in the
+    model: variance across items, variance across participants, and
+    variance of the L1 error term
+ei(j1k1).*
 
 ### Model
 
@@ -378,7 +330,13 @@ Interpretation: The fixed effects table indicates that the expected
 average value for TRT, across all participants and items, is 6.22055 log
 ms, so 502.9798 ms. Notice that, in the random effects table, three
 random effects can be found: the random intercept for ITEM, the random
-intercept for Subject, and the residuals.
+intercept for Subject, and the residuals. Observation of these residuals
+suggests that an important amount of participant variability, and a
+reduced amount of item variability. This contrast is not surprising, and
+it is found commonly in psycholinguistic research–items were strictly
+controlled for a range of factors that impact reading time, such as
+length and frequency, among others, thereby reducing variability in
+reading times across items.
 
 In what follows, we explore how important the clusters are in the MLM.
 
@@ -434,17 +392,19 @@ Effective sample size
     ## [1] 1.243105
 
 The effective sample size, when adjusted for participant clustering, is
-1.243.
+1.243. This suggests high within-participant consistency in terms of
+reading times.
 
 We then calculate the DEFT, in order to get a sense of how off our
-standard error estimate would be in a model that is not a MLM.
+standard error estimate would be in linear model that would not include
+clustering.
 
 ``` r
 DEFT = sqrt(DEFF)
 ```
 
-Standard errors are 5.074 times larger than was originally estimated in
-a normal analysis.
+Standard errors are 5.074 times larger than we would estimate in a
+linear model that would not include clustering.
 
 #### Items
 
@@ -491,14 +451,15 @@ The effective sample size, when adjusted for participant clustering, is
 25.247.
 
 We then calculate the DEFT, in order to get a sense of how off our
-standard error estimate would be in a model that is not a MLM.
+standard error estimate would be in a linear model that would not
+include clustering.
 
 ``` r
 DEFT2 = sqrt(DEFF2)
 ```
 
-Standard errors are 1.592 times larger than was originally estimated in
-a normal analysis.
+Standard errors are 1.592 times larger than we would estimate in a
+linear model that would not include clustering.
 
 Overall, these scores warrant the use of a MLM for this dataset. We
 therefore continue our analysis by adding a level-2 predictor to the
@@ -508,15 +469,15 @@ null model.
 
 ### Equation
 
-L1: TRTi(j1k1) = 𝜋0(j1k1) + ei(j1k1) L2: 𝜋0(j1k1) = 𝜃000 + 𝜃001Contextj+
-b0j10 + c00k1
+  - L1: TRTi(j1k1) = 𝜋0(j1k1) + ei(j1k1)
+  - L2: 𝜋0(j1k1) = 𝜃000 + 𝜃001Contextj+ b0j10 + c00k1
 
 In this model, we include the effects-coded level-2 predictor
 “Context\_dev”, capturing the difference between embedding sentence
 contexts with or without a modifier related to one of the homonym’s
-meanings (e.g., Mary liked the \[fresh/elder\] sage). Thus, we estimate
-5 parameters in this model (2 fixed effects, 3 random effects). This
-model allows us to answer question a) Do bilingual older adults process
+meanings (e.g., Mary liked the fresh sage). Thus, we estimate 5
+parameters in this model (2 fixed effects, 3 random effects). This model
+allows us to answer question a) Do bilingual older adults process
 ambiguous words differently when they are embedded in sentences that
 clarify their meaning or not?
 
@@ -575,16 +536,11 @@ negative effect of Context\_dev on expected TRT, suggesting that
 homonyms embedded in sentence contexts with a modifier related to one of
 their target meanings are read faster than compared to the average
 reading speed across both sentence contexts. In the next section, we
-plotted this effect. This suggests that bilingual older adults do
-process ambiguous words differently when they are embedded in sentences
-that clarify their meaning.
+plotted this effect. Observation of this plot suggests that bilingual
+older adults do process ambiguous words differently when they are
+embedded in sentences that include a modifier clarifying their meaning.
 
 ### Visualization of the effect
-
-``` r
-ef <- as.data.frame(Effect(c("Context_dev"), Model2))
-ef
-```
 
     ##   Context_dev      fit         se    lower    upper
     ## 1        -0.5 6.315969 0.08423460 6.150772 6.481167
@@ -593,27 +549,9 @@ ef
     ## 4         0.2 6.181629 0.08356822 6.017738 6.345519
     ## 5         0.5 6.124054 0.08425242 5.958822 6.289286
 
-``` r
-ef$Context = ifelse(ef$Context_dev == -0.5, "Bare", ifelse(ef$Context_dev == 0.5, "Modifier", "HDUEHEIQU"))
-ef = subset(ef, Context != "HDUEHEIQU")
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
-ggplot(ef, aes(x=Context, y=fit)) +
-  geom_bar(stat="identity", position="dodge", aes(fill=Context)) +
-  scale_fill_manual(values = wes_palette("GrandBudapest2"))+
-  geom_errorbar(aes(ymin=fit-se, ymax=fit+se), width=.3, size = .6) +
-  labs(y="TRT of the target ambiguous word\n(log ms, fitted)", x = "Prior sentence context", fill="") +
-  coord_cartesian(ylim=c(5,7)) +
-  theme_apa()+
-  theme_bw(base_size = 20) +
-  theme(legend.position = "none", axis.text.x = element_text(size = 16), 
-        axis.text.y = element_text(size = 16), axis.title.x= element_text(size = 16),
-        axis.title.y = element_text(size = 12), strip.text.x = element_text(size = 16),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
-
-In order to reduce the length of this demo, we do not run additional
+In order to reduce the length of this demo, we did not run additional
 checks on this model. However, we fully check model assumptions for
 model 3, our last model, and compare it to Model 2 and the null model in
 terms of fit.
@@ -622,9 +560,9 @@ terms of fit.
 
 ### Equation
 
-L1: TRTi(j1k1) = 𝜋0(j1k1) + ei(j1k1) L2: 𝜋0(j1k1) = 𝜃000 + b0j10 + c00k1
-+ 𝜃001Contextj + 𝜃002Language groupk + c10k1 + 𝜃001Language groupk\*
-𝜃002Contextj
+  - L1: TRTi(j1k1) = 𝜋0(j1k1) + ei(j1k1)
+  - L2: 𝜋0(j1k1) = 𝜃000 + b0j10 + c00k1 + 𝜃001Contextj + 𝜃002Language
+    groupk + c10k1 + 𝜃001Language groupk x 𝜃002Contextj
 
 We estimate 8 parameters in this model (4 fixed effects, 4 random
 effects). We added a random slope for Context\_dev by participant, in
@@ -699,25 +637,20 @@ exp(6.19294)
 Inspection of the fixed effect table indicates that the expected value
 for log TRT when Context and Group are at 0 (i.e., for both sentence
 context type and both language groups), is 6.19294 log ms, so
-489.2825ms. There is a significant negative effect of context on
-expected TRT, suggesting that homonyms embedded in sentence contexts
-with a modifier related to one of their target meanings are read faster
-than compared to the average reading speed across both sentence
-contexts. The effect of language group does not reach significance,
-suggesting that no difference of French-English bilinguals, in terms of
-Log TRT, from the grand mean log TRT of the two language groups. This
-indicates that native language does note modulate the processing of
-ambiguous words (question c). The interaction of language group and
-context also does not reach significance, suggesting that context does
-impacts the processing of ambiguous words regardless of native language
-(question d).
+489.2825ms. As in Model 2, there is a significant negative effect of
+context on expected TRT, suggesting that homonyms embedded in sentence
+contexts with a modifier related to one of their target meanings are
+read faster than compared to the average reading speed across both
+sentence contexts. The effect of language group does not reach
+significance, suggesting no difference of French-English bilinguals, in
+terms of Log TRT, from the grand mean log TRT of the two language
+groups. This indicates that native language does not modulate the
+processing of ambiguous words (question c). The interaction of language
+group and context also does not reach significance, suggesting that
+context does impacts the processing of ambiguous words regardless of
+native language (question d).
 
 #### Visualization of the interaction (non-significant)
-
-``` r
-ef <- as.data.frame(Effect(c("Context_dev", "Group_dev"), Model3))
-ef
-```
 
     ##    Context_dev Group_dev      fit         se    lower    upper
     ## 1         -0.5      -0.5 6.172514 0.12562355 5.926146 6.418882
@@ -746,27 +679,7 @@ ef
     ## 24         0.2       0.5 6.307430 0.10357255 6.104308 6.510553
     ## 25         0.5       0.5 6.261924 0.10461406 6.056759 6.467089
 
-``` r
-ef$Context = ifelse(ef$Context_dev == -0.5, "Bare", ifelse(ef$Context_dev == 0.5, "Modifier", "HDUEHEIQU"))
-ef$Group = ifelse(ef$Group_dev == -0.5, "L1 English", ifelse(ef$Group_dev == 0.5, "L1 French", "HDUEHEIQU"))
-ef = subset(ef, Context != "HDUEHEIQU" & Group != "HDUEHEIQU")
-
-ggplot(ef, aes(x=Context, y=fit)) +
-  geom_bar(stat="identity", position="dodge", aes(fill=Context)) +
-  scale_fill_manual(values = wes_palette("GrandBudapest2"))+
-  geom_errorbar(aes(ymin=fit-se, ymax=fit+se), width=.3, size = .6) +
-  labs(y="TRT of the target ambiguous word\n(log ms, fitted)", x = "Prior sentence context", fill="") +
-  facet_wrap(~Group)+
-  coord_cartesian(ylim=c(4,7)) +
-  theme_apa()+
-  theme_bw(base_size = 20) +
-  theme(legend.position = "none", axis.text.x = element_text(size = 16), 
-        axis.text.y = element_text(size = 16), axis.title.x= element_text(size = 16),
-        axis.title.y = element_text(size = 12), strip.text.x = element_text(size = 16),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 #### 95% plausible values range for intercepts
 
@@ -789,8 +702,9 @@ Upper_range <- 6.19294 + SDx2
 lower_range <- 6.19294 - SDx2
 ```
 
-The 95% plausible values range for participants means is 5.869-6.517 log
-ms.
+The 95% plausible values range for items means is 5.869-6.517 log ms.
+The smaller plausible value range for items means compared to
+participants means was expected, as items were strictly controlled.
 
 ### Model comparison
 
@@ -851,7 +765,10 @@ The profile confidence interval for language group, context\*language
 group, and for the random slope for context by subject all include 0.
 This suggests that these predictors and the random slope do not
 contribute significantly to the model and allows us to answer “no” to
-question b (Does the effect of context vary across participants?).
+question b (Does the effect of context vary across participants?). These
+results are also in line with the results of model comparison
+above–model 2, which does not include these parameters, does not have
+a worse fit than model 3 (but has better fit than the null model).
 
 #### Difference in residuals
 
@@ -940,28 +857,13 @@ PSYC746_final <- PSYC746_final %>%
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
-L1 residuals look fairly normal.
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-41-1.png)<!-- -->
+L1 residuals look fairly
+normal.
 
 #### Distribution of L2 residuals
 
-``` r
-par(mfrow=c(1,3))
-
-PSYC746_finalByParticRanef <- ranef(Model3)$Subject[['(Intercept)']]
-qqnorm(PSYC746_finalByParticRanef,  main = "participant intercepts") #2 weirdos
-qqline(PSYC746_finalByParticRanef)
-
-PSYC746_finalByParticRanef_slope <- ranef(Model3)$Subject[['Context_dev']]
-qqnorm(PSYC746_finalByParticRanef_slope,  main = "participant slopes") #OK
-qqline(PSYC746_finalByParticRanef_slope)
-
-PSYC746_finalByItemRanef <- ranef(Model3)$ITEM[['(Intercept)']]
-qqnorm(PSYC746_finalByItemRanef,  main = "item intercepts") #1 weirdo
-qqline(PSYC746_finalByItemRanef)
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-43-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
 
 There is a potential violation of the assumption of normality of
 residuals. There are two participants that should be flagged as
@@ -974,26 +876,21 @@ L2 residuals-participants
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-43-1.png)<!-- -->
 
 L2 residuals - Items
     (intercept)
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-45-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
 
-L2 residuals - Participants (slope)
-
-``` r
-l2_residuals_p %>% 
-  ggplot(mapping = aes(x = Context_dev)) +
-  geom_histogram()
-```
+L2 residuals - Participants
+    (slope)
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-46-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-45-1.png)<!-- -->
 
 #### Summary statistics L2 residuals
 
@@ -1024,33 +921,19 @@ distribution.
 
 #### Flag outliers-participants (intercept)
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-47-1.png)<!-- -->
 Participant 29 and 8 are
 outliers.
 
 #### Flag outliers-items (intercept)
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
-Item 2 is an outlier (this item is the word “axes”).
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
+Item 2 is an outlier (this item is the word
+“axes”).
 
 #### Flag outliers-participants (slope)
 
-``` r
-is_outlier <- function(x) {
-  return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
-}
-
-temp_int <- l2_residuals_p %>% 
-  tibble::rownames_to_column(var="outlier") %>% 
-  mutate(is_outlier = ifelse(is_outlier(`Context_dev`), `Context_dev`, as.numeric(NA)))
-temp_int$outlier[which(is.na(temp_int$is_outlier))] <- as.numeric(NA)
-
-ggplot(temp_int, aes(y = `(Intercept)`, x = 0)) +
-  geom_boxplot()  +
-  geom_text(aes(label = outlier), na.rm = TRUE, nudge_y = 0.2)
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-50-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
 No outlier flagged.
 
 ##### As an aside, what if we removed these outliers?
@@ -1163,36 +1046,16 @@ Model 3.
 
 #### Relatedness
 
-In what follows, we checked whether: -L2 predictors were unrelated to L2
-residuals -L2 predictors were not related to L1 residuals -L2 residuals
-were unrelated to L1 residuals -L2 residuals were independent from one
-another and across L2 units
+In what follows, we checked whether: \* L2 predictors were unrelated to
+L2 residuals \* L2 predictors were not related to L1 residuals \* L2
+residuals were unrelated to L1 residuals \* L2 residuals were
+independent from one another and across L2 units
 
 ##### Relatedness of L2 predictors and L2 residuals
 
-**Relatedness of L2 predictors (context) and L2 residuals (intercept
-participant)**
-
-``` r
-l2_residuals_rowname_p <- rownames_to_column(l2_residuals_p) %>% 
-  rename("Subject" = rowname) %>%
-  mutate("Subject" = as.integer(Subject)) %>% 
-  rename(L2resid_p = '(Intercept)') %>%
-  rename(L2resid_slope = 'Context_dev') %>%
-  as_tibble()
-
-l2_mix <- merge(l2_residuals_rowname_p, PSYC746_final, by = "Subject")
-
-l2_mix %>% ggplot(mapping = aes(x = L2resid_p, y = Context_dev)) +
-  geom_point() +
-  labs(x = "Residuals participants", y = "Context")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-53-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix$L2resid_p, l2_mix$Context_dev)
-```
+*Relatedness of L2 predictors (context) and L2 residuals (intercept
+participant)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-52-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1209,20 +1072,9 @@ cor.test(l2_mix$L2resid_p, l2_mix$Context_dev)
 There is no significant correlation between L2 residuals by participant
 and Context.
 
-**Relatedness of L2 predictors (group) and L2 residuals (intercept
-participant)**
-
-``` r
-l2_mix %>% ggplot(mapping = aes(x = L2resid_p, y = Group_dev)) +
-  geom_point() +
-  labs(x = "Residuals participants", y = "Group")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix$L2resid_p, l2_mix$Group_dev) 
-```
+*Relatedness of L2 predictors (group) and L2 residuals (intercept
+participant)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-53-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1239,28 +1091,9 @@ cor.test(l2_mix$L2resid_p, l2_mix$Group_dev)
 There is no significant correlation between L2 residuals by participant
 and Language Group.
 
-**Relatedness of l2 predictor (context) and l2\_residuals (intercept
-items)**
-
-``` r
-l2_residuals_rowname_i <- rownames_to_column(l2_residuals_i) %>% 
-  rename("ITEM" = rowname) %>%
-  mutate("ITEM" = as.integer(ITEM)) %>% 
-  rename(L2resid_i = '(Intercept)') %>%
-  as_tibble()
-
-l2_mix <- merge(l2_residuals_rowname_i, PSYC746_final, by = "ITEM")
-
-l2_mix %>% ggplot(mapping = aes(x = L2resid_i, y = Context_dev)) +
-  geom_point() +
-  labs(x = "Residuals items", y = "Context")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-55-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix$L2resid_i, l2_mix$Context_dev) 
-```
+*Relatedness of L2 predictor (context) and L2 residuals (intercept
+items)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1277,20 +1110,9 @@ cor.test(l2_mix$L2resid_i, l2_mix$Context_dev)
 There is no significant correlation between L2 residuals by item and
 Context.
 
-**Relatedness of L2 predictors (group) and L2 residuals (intercept
-items)**
-
-``` r
-l2_mix %>% ggplot(mapping = aes(x = L2resid_i, y = Group_dev)) +
-  geom_point() +
-  labs(x = "Residuals items", y = "Group")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-56-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix$L2resid_i, l2_mix$Group_dev) 
-```
+*Relatedness of L2 predictors (group) and L2 residuals (intercept
+items)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-55-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1307,21 +1129,9 @@ cor.test(l2_mix$L2resid_i, l2_mix$Group_dev)
 There is no significant correlation between L2 residuals by item and
 Language Group.
 
-**Relatedness of L2 prediction (context) and L2\_residuals (slope
-context participant)**
-
-``` r
-l2_mix <- merge(l2_residuals_rowname_p, PSYC746_final, by = "Subject")
-l2_mix %>% ggplot(mapping = aes(x = L2resid_slope, y = Context_dev)) +
-  geom_point() +
-  labs(x = "Residual slope by participants", y = "Context")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-57-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix$L2resid_slope, l2_mix$Context_dev)
-```
+*Relatedness of L2 predictor (context) and L2 residuals (slope context
+participant)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-56-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1338,20 +1148,9 @@ cor.test(l2_mix$L2resid_slope, l2_mix$Context_dev)
 There is no significant correlation between L2 residuals (random slope
 for Context by participants) and Context.
 
-**Relatedness of L2 predictor (group) and L2 residuals (slope context
-participant)**
-
-``` r
-l2_mix %>% ggplot(mapping = aes(x = L2resid_slope, y = Group_dev)) +
-  geom_point() +
-  labs(x = "Residual slope by participants", y = "Group")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-58-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix$L2resid_slope, l2_mix$Group_dev)
-```
+*Relatedness of L2 predictor (group) and L2 residuals (slope context
+participant)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-57-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1370,19 +1169,8 @@ for Context by participants) and Language Group.
 
 ##### Relatedness of L2 predictors and L1 residuals
 
-**Relatedness of L2 predictors (context) and L1 residuals**
-
-``` r
-PSYC746_final %>% ggplot(mapping = aes(x = l1resid, y = Context_dev)) +
-  geom_point() +
-  labs(x = "Residuals", y = "Context")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-59-1.png)<!-- -->
-
-``` r
-cor.test(PSYC746_final$l1resid, PSYC746_final$Context_dev) 
-```
+*Relatedness of L2 predictors (context) and L1 residuals*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-58-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1398,19 +1186,8 @@ cor.test(PSYC746_final$l1resid, PSYC746_final$Context_dev)
 
 There is no significant correlation between L1 residuals and Context.
 
-**Relatedness of L2 predictors (group) and L1 residuals**
-
-``` r
-PSYC746_final %>% ggplot(mapping = aes(x = l1resid, y = Group_dev)) +
-  geom_point() +
-  labs(x = "Residuals", y = "Group")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-60-1.png)<!-- -->
-
-``` r
-cor.test(PSYC746_final$l1resid, PSYC746_final$Group_dev) 
-```
+*Relatedness of L2 predictors (group) and L1 residuals*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-59-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1429,9 +1206,9 @@ Group.
 
 ##### Relatedness of L1 and L2 residuals
 
-**Relatedness of l1\_residuals and l2\_residuals (intercept
-participants)**
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-61-1.png)<!-- -->
+*Relatedness of l1\_residuals and l2\_residuals (intercept
+participants)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-60-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1449,12 +1226,12 @@ There is no significant correlation between L1 residuals and L2
 residuals (random intercept by participant). Again, the two outliers are
 clearly identifiable.
 
-**Relatedness of l1\_residuals and l2\_residuals (intercept
-items)**
+*Relatedness of l1\_residuals and l2\_residuals (intercept
+items)*
 
     ## Joining, by = "ITEM"
 
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-62-1.png)<!-- -->
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-61-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1472,8 +1249,8 @@ There is a significant correlation between L1 residuals and the random
 intercept by item, although the correlation is very close to 0 (p =
 .09).
 
-**Relatedness of l1\_residuals and l2\_residuals (slope participants)**
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-63-1.png)<!-- -->
+*Relatedness of l1\_residuals and l2\_residuals (slope participants)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-62-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1492,19 +1269,8 @@ residuals (random slope for Context by participant).
 
 ##### Relatedness L2 residuals and L2 residuals
 
-**L2 intercept (participant)-L2 slope (participants)**
-
-``` r
-l2_mix %>% ggplot(mapping = aes(x = L2resid_p, y = L2resid_slope)) +
-  geom_point() +
-  labs(x = "Intercept participants", y = "Slope Context by participant")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-64-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix$L2resid_p, l2_mix$L2resid_slope) 
-```
+*L2 intercept (participant)-L2 slope (participants)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-63-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1523,20 +1289,8 @@ the higher the mean log TRT value for an individual (i.e., the slower
 the individual), the smaller the effect of context for this individual.
 This is a violation of the assumption of independence of errors.
 
-**L2 intercept (participant)-L2 intercept (item)**
-
-``` r
-l2_mix2 <- merge(l2_mix, l2_residuals_rowname_i, by = "ITEM")
-l2_mix2 %>% ggplot(mapping = aes(x = L2resid_p, y = L2resid_i)) +
-  geom_point() +
-  labs(x = "Intercept participants", y = "Intercept items")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-65-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix2$L2resid_p, l2_mix2$L2resid_i)
-```
+*L2 intercept (participant)-L2 intercept (item)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-64-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1553,19 +1307,8 @@ cor.test(l2_mix2$L2resid_p, l2_mix2$L2resid_i)
 There is no correlation between the random intercept by participant and
 the random intercept by item.
 
-**L2 intercept (items)-L2 slope (participants)**
-
-``` r
-l2_mix2 %>% ggplot(mapping = aes(x = L2resid_i, y = L2resid_slope)) +
-  geom_point() +
-  labs(x = "Intercept items", y = "Slope Context by participant")
-```
-
-![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-66-1.png)<!-- -->
-
-``` r
-cor.test(l2_mix2$L2resid_i, l2_mix2$L2resid_slope) 
-```
+*L2 intercept (items)-L2 slope (participants)*
+![](Final_Project_markdown_files/figure-gfm/unnamed-chunk-65-1.png)<!-- -->
 
     ## 
     ##  Pearson's product-moment correlation
@@ -1581,3 +1324,23 @@ cor.test(l2_mix2$L2resid_i, l2_mix2$L2resid_slope)
 
 There is no correlation between the random intercept by item and the
 random slope for Context by item.
+
+# <span style="color: purple;">6. Conclusion</span>
+
+In conclusion, we have found that bilingual older adults do process
+ambiguous words differently when they are embedded in sentences that
+include a modifier clarifying their meaning. This effect did not vary
+significantly across participants. There was also no significant
+difference in terms of processing speed between English-French and
+French-English bilinguals. Whether English was the first or the second
+language did not modulate the processing of ambiguous words. Finally,
+the effect of sentence context did not vary across language groups,
+suggesting that context does impacts the processing of ambiguous words
+regardless of native language in bilingual older adults.
+
+It should be noted that all participants were highly fluent in English,
+which may partially explain the absence of native language effect.
+However, the effects of native language and the interaction of native
+language were both borderline approached significance, which suggests
+that the study may have been underpowered (as a reminder, there were 32
+participants).
