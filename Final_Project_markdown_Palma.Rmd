@@ -2,7 +2,7 @@
 title: "PSYC 746-Final Project Demo"
 author: "Pauline Palma"
 date: "03/04/2020"
-output: html_document
+output: github_document
 ---
 
 ``````{r setup, include=FALSE}
